@@ -5,35 +5,59 @@ function HomePage() {
   const [count, setCount] = useState(0)
   const [name, setName] = useState('')
   const [price, setPrice] = useState('')
+  const [category, setCategory] = useState('')
+  const [products, setProducts] = useState([])
 
-  const products = [
-    {
-      id: 1,
-      name: 'Laptop',
-      price: 650
-    },
-    {
-      id: 2,
-      name: 'Phone',
-      price: 400
-    },
-    {
-      id: 3,
-      name: 'Headphones',
-      price: 80
-    }
-  ]
-
-  // ✅ التعديل الجديد
   useEffect(() => {
-    console.log('Home Page loaded')
+    fetch('http://localhost:3000/api/products')
+      .then((response) => response.json())
+      .then((data) => {
+        setProducts(data)
+      })
+      .catch((error) => {
+        console.error('Error:', error)
+      })
   }, [])
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
 
-    console.log('Name:', name)
-    console.log('Price:', price)
+    const newProduct = {
+      name: name,
+      price: Number(price),
+      category: category
+    }
+
+    try {
+      const response = await fetch('http://localhost:3000/api/products', {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'application/json'
+        },
+
+        body: JSON.stringify(newProduct)
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        console.error('Error:', data.message)
+        return
+      }
+
+      setProducts((currentProducts) => [
+        ...currentProducts,
+        data
+      ])
+
+      setName('')
+      setPrice('')
+      setCategory('')
+
+    } catch (error) {
+      console.error('Error:', error)
+    }
   }
 
   return (
@@ -65,6 +89,13 @@ function HomePage() {
           placeholder="Product price"
           value={price}
           onChange={(event) => setPrice(event.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Product category"
+          value={category}
+          onChange={(event) => setCategory(event.target.value)}
         />
 
         <button type="submit">

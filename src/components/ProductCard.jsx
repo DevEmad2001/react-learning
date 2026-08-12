@@ -1,9 +1,29 @@
-function ProductCard(props) {
+function ProductCard({ name, price, category }) {
   return (
-    <div>
-      <h3>{props.name}</h3>
-      <p>Price: {props.price} JOD</p>
-      <button>View Product</button>
+    <div className="product-card">
+
+      <div className="product-image">
+        <span>{name.charAt(0)}</span>
+      </div>
+
+      <div className="product-info">
+        <h3>{name}</h3>
+
+        <p className="product-category">
+          {category}
+        </p>
+
+        <div className="product-footer">
+          <span className="product-price">
+            ${price}
+          </span>
+
+          <button className="product-menu">
+            ...
+          </button>
+        </div>
+      </div>
+
     </div>
   )
 }

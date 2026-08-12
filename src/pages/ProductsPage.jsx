@@ -2,18 +2,21 @@ import { useEffect, useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import ProductCard from '../components/ProductCard'
 import '../styles/products.css'
+import AddProductModal from '../components/AddProductModal'
 
 function ProductsPage() {
-
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  useEffect(() => {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [selectedCategory, setSelectedCategory] =
+    useState('All Categories')
 
+  useEffect(() => {
     fetch('http://localhost:3000/api/products')
       .then((response) => {
-
         if (!response.ok) {
           throw new Error('Failed to load products')
         }
@@ -28,43 +31,59 @@ function ProductsPage() {
         setError(error.message)
         setLoading(false)
       })
-
   }, [])
+
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
+
+    const matchesCategory =
+      selectedCategory === 'All Categories' ||
+      product.category === selectedCategory
+
+    return matchesSearch && matchesCategory
+  })
 
   return (
     <div className="products-page">
-
       <Sidebar />
 
       <main className="products-content">
-
         <div className="products-header">
-
           <div>
             <h1>Products</h1>
             <p>Manage your store products</p>
           </div>
 
-          <button className="add-product-button">
+            <button
+            className="add-product-button"
+            onClick={() => setShowAddModal(true)}
+            >
             + Add Product
-          </button>
-
+            </button>
         </div>
 
         <div className="products-toolbar">
-
           <input
             className="search-input"
             type="text"
             placeholder="Search products..."
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
 
-          <select className="category-select">
+          <select
+            className="category-select"
+            value={selectedCategory}
+            onChange={(event) =>
+              setSelectedCategory(event.target.value)
+            }
+          >
             <option>All Categories</option>
             <option>Electronics</option>
             <option>Accessories</option>
           </select>
-
         </div>
 
         {loading && (
@@ -81,8 +100,7 @@ function ProductsPage() {
 
         {!loading && !error && (
           <div className="products-grid">
-
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 name={product.name}
@@ -90,11 +108,21 @@ function ProductsPage() {
                 category={product.category}
               />
             ))}
-
           </div>
         )}
-
       </main>
+
+         {showAddModal && (
+        <AddProductModal
+            onClose={() => setShowAddModal(false)}
+            onProductAdded={(newProduct) => {
+            setProducts((currentProducts) => [
+                ...currentProducts,
+                newProduct
+            ])
+            }}
+        />
+        )}
 
     </div>
   )

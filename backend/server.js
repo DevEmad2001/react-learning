@@ -28,10 +28,14 @@ const products = [
   }
 ]
 
+
+// GET Products
 app.get('/api/products', (req, res) => {
   res.status(200).json(products)
 })
 
+
+// POST Product
 app.post('/api/products', (req, res) => {
   const { name, price, category } = req.body
 
@@ -41,8 +45,13 @@ app.post('/api/products', (req, res) => {
     })
   }
 
+  const newId =
+    products.length > 0
+      ? Math.max(...products.map((product) => product.id)) + 1
+      : 1
+
   const newProduct = {
-    id: products.length + 1,
+    id: newId,
     name: name,
     price: Number(price),
     category: category
@@ -52,6 +61,32 @@ app.post('/api/products', (req, res) => {
 
   res.status(201).json(newProduct)
 })
+
+
+// DELETE Product
+app.delete('/api/products/:id', (req, res) => {
+  const id = Number(req.params.id)
+
+  const productIndex = products.findIndex(
+    (product) => product.id === id
+  )
+
+  if (productIndex === -1) {
+    return res.status(404).json({
+      message: 'Product not found'
+    })
+  }
+
+  const deletedProduct = products[productIndex]
+
+  products.splice(productIndex, 1)
+
+  res.status(200).json({
+    message: 'Product deleted successfully',
+    product: deletedProduct
+  })
+})
+
 
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`)

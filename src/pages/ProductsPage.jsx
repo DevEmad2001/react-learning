@@ -6,9 +6,11 @@ import {
   List,
 } from 'lucide-react'
 
+
 import Sidebar from '../components/Sidebar'
 import ProductCard from '../components/ProductCard'
 import AddProductModal from '../components/AddProductModal'
+import { useNavigate } from 'react-router'
 
 import '../styles/products.css'
 
@@ -17,6 +19,15 @@ function ProductsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [viewMode, setViewMode] = useState('grid')
+
+const navigate = useNavigate()
+
+function handleLogout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+
+  navigate('/login')
+}
 
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] =
@@ -42,24 +53,34 @@ function ProductsPage() {
     },
   ])
 
-  useEffect(() => {
-    fetch('http://localhost:3000/api/products')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load products')
-        }
+useEffect(() => {
+  const token = localStorage.getItem('token')
 
-        return response.json()
-      })
-      .then((data) => {
-        setProducts(data)
-        setLoading(false)
-      })
-      .catch((error) => {
-        setError(error.message)
-        setLoading(false)
-      })
-  }, [])
+  fetch('http://localhost:3000/api/products', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  })
+    .then((response) => {
+      if (response.status === 401) {
+        throw new Error('Unauthorized')
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to load products')
+      }
+
+      return response.json()
+    })
+    .then((data) => {
+      setProducts(data)
+      setLoading(false)
+    })
+    .catch((error) => {
+      setError(error.message)
+      setLoading(false)
+    })
+}, [])
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
@@ -83,17 +104,28 @@ function ProductsPage() {
 
       <main className="products-content">
         {/* Top Bar */}
-        <div className="top-bar">
-          <div className="notification-button">
-            <Bell size={24} />
+<div className="top-bar">
+  <div className="top-bar-actions">
 
-            {unreadNotifications > 0 && (
-              <span className="notification-badge">
-                {unreadNotifications}
-              </span>
-            )}
-          </div>
-        </div>
+    <div className="notification-button">
+      <Bell size={24} />
+
+      {unreadNotifications > 0 && (
+        <span className="notification-badge">
+          {unreadNotifications}
+        </span>
+      )}
+    </div>
+
+    <button
+      className="logout-button"
+      onClick={handleLogout}
+    >
+      Logout
+    </button>
+
+  </div>
+</div>
 
         {/* Header */}
         <div className="products-header">

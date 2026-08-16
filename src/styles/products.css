@@ -677,3 +677,26 @@ body {
     width: 100%;
   }
 }
+
+
+.top-bar-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.logout-button {
+  border: none;
+  background-color: transparent;
+
+  color: #dc2626;
+
+  font-size: 14px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+.logout-button:hover {
+  text-decoration: underline;
+}
